@@ -3,22 +3,20 @@
 services:
   mysql:
     image: mysql:8.0
+    container_name: rag_mysql
     environment:
-      # Root password used to initialize the root user (required)
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      # Database to create on first initialization
       MYSQL_DATABASE: ${MYSQL_DATABASE:-rag_chat}
-      # Non-root application user created on first initialization
       MYSQL_USER: ${MYSQL_USER:-user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    # host_port:container_port -> container runs MySQL on 3306 always; host port is configurable via MYSQL_PORT_HOST
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT_HOST:-3306}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-    # Keeps compatibility with some older clients; remove this line to use the default caching_sha2_password.
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,27 +24,24 @@ services:
 
   adminer:
     image: adminer
+    container_name: rag_adminer
     ports:
-      - "8081:8080"
+      - "${ADMINER_PORT_HOST:-8081}:8080"
     depends_on:
       - mysql
     environment:
-      - ADMINER_DEFAULT_SERVER=mysql
+      ADMINER_DEFAULT_SERVER: mysql
     restart: unless-stopped
 
   backend:
     build: .
+    container_name: rag_backend
+    # environment values come from the env file; ensure you pass the correct env file when starting (see .env.dev/.env.prod)
     env_file:
-      - .env
-    environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-rag_chat}
-      - MYSQL_USER=${MYSQL_USER:-user}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
-      - API_KEY=${API_KEY:-change_me}
+      - .env.dev
+    # map host SERVER_PORT to container SERVER_PORT (container must run the app on the same port)
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
     depends_on:
       mysql:
         condition: service_healthy
