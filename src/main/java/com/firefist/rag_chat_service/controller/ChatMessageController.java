@@ -34,7 +34,6 @@ public class ChatMessageController {
             @RequestParam(name = "size", defaultValue = "50") int size,
             @RequestParam(name = "sort", defaultValue = "asc") String sort
     ) {
-        try {
             UUID sid = UUID.fromString(sessionId);
             Sort.Direction dir = "desc".equalsIgnoreCase(sort) ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(dir, "createdAt"));
@@ -50,15 +49,11 @@ public class ChatMessageController {
                     m.getSequenceNumber()
             )).collect(Collectors.toList());
             return ResponseEntity.ok().body(body);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body("invalid session id");
-        }
     }
 
     @PostMapping
     public ResponseEntity<?> addMessage(@PathVariable("sessionId") String sessionId,
                                         @Valid @RequestBody CreateMessageRequest req) {
-        try {
             UUID sid = UUID.fromString(sessionId);
             ChatMessage saved = messageService.addMessage(sid, req);
             if (saved == null) return ResponseEntity.notFound().build();
@@ -72,9 +67,6 @@ public class ChatMessageController {
                     saved.getSequenceNumber()
             );
             return ResponseEntity.status(201).body(resp);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body("invalid session id");
-        }
     }
 
     @GetMapping("/testRL")

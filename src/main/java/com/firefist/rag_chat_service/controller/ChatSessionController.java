@@ -44,62 +44,46 @@ public class ChatSessionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SessionResponse> getSession(@PathVariable("id") String id) {
-        try {
-            UUID uuid = UUID.fromString(id);
-            log.info("Retrieving session by uid - {}", uuid.toString());
-            ChatSession s = service.getById(uuid);
-            if (s == null) return ResponseEntity.notFound().build();
-            SessionResponse resp = new SessionResponse(
-                    s.getId(), s.getTitle(), s.getUserId(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt()
-            );
-            return ResponseEntity.ok(resp);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        UUID uuid = UUID.fromString(id);
+        log.info("Retrieving session by uid - {}", uuid.toString());
+        ChatSession s = service.getById(uuid);
+        if (s == null) return ResponseEntity.notFound().build();
+        SessionResponse resp = new SessionResponse(
+                s.getId(), s.getTitle(), s.getUserId(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt()
+        );
+        return ResponseEntity.ok(resp);
     }
 
     @PutMapping("/{id}/rename")
     public ResponseEntity<SessionResponse> renameSession(@PathVariable("id") String id,
                                                          @Valid @RequestBody RenameSessionRequest req) {
-        try {
-            UUID uuid = UUID.fromString(id);
-            ChatSession updated = service.renameSession(uuid, req.getTitle());
-            if (updated == null) return ResponseEntity.notFound().build();
-            SessionResponse resp = new SessionResponse(
-                    updated.getId(), updated.getTitle(), updated.getUserId(), updated.isFavorite(),
-                    updated.getCreatedAt(), updated.getUpdatedAt()
-            );
-            return ResponseEntity.ok(resp);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+        UUID uuid = UUID.fromString(id);
+        ChatSession updated = service.renameSession(uuid, req.getTitle());
+        if (updated == null) return ResponseEntity.notFound().build();
+        SessionResponse resp = new SessionResponse(
+                updated.getId(), updated.getTitle(), updated.getUserId(), updated.isFavorite(),
+                updated.getCreatedAt(), updated.getUpdatedAt()
+        );
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/{id}/favorite")
     public ResponseEntity<SessionResponse> toggleFavorite(@PathVariable("id") String id) {
-        try {
-            UUID uuid = UUID.fromString(id);
-            ChatSession updated = service.toggleFavorite(uuid);
-            if (updated == null) return ResponseEntity.notFound().build();
-            SessionResponse resp = new SessionResponse(
-                    updated.getId(), updated.getTitle(), updated.getUserId(), updated.isFavorite(),
-                    updated.getCreatedAt(), updated.getUpdatedAt()
-            );
-            return ResponseEntity.ok(resp);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+        UUID uuid = UUID.fromString(id);
+        ChatSession updated = service.toggleFavorite(uuid);
+        if (updated == null) return ResponseEntity.notFound().build();
+        SessionResponse resp = new SessionResponse(
+                updated.getId(), updated.getTitle(), updated.getUserId(), updated.isFavorite(),
+                updated.getCreatedAt(), updated.getUpdatedAt()
+        );
+        return ResponseEntity.ok(resp);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable("id") String id) {
-        try {
-            UUID uuid = UUID.fromString(id);
-            boolean deleted = service.softDeleteSession(uuid);
-            if (!deleted) return ResponseEntity.notFound().build();
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+        UUID uuid = UUID.fromString(id);
+        boolean deleted = service.softDeleteSession(uuid);
+        if (!deleted) return ResponseEntity.notFound().build();
+        return ResponseEntity.noContent().build();
     }
 }
