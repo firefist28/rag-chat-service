@@ -1,20 +1,308 @@
-# RAG Chat Storage - Backend (Spring Boot)
+# RAG Chat Service — Backend (Spring Boot)
 
-## Quick start (dev)
-1. Copy `.env.example` to `.env` and update values.
-2. Build & run with Docker Compose:
-3. Backend will be available at http://localhost:8080
-- Health: http://localhost:8080/api/v1/health
-- Adminer (DB browser): http://localhost:8081
+> Backend service for the **RAG Chat Service**, a containerized Spring Boot application that provides APIs for storing and managing chat messages.
+> This README covers project overview, setup, configuration, APIs, Docker usage, and troubleshooting.
 
-## API Key authentication
+---
 
-All non-whitelisted endpoints require a header:
+## 🧭 Table of Contents
 
-    X-API-KEY: StrongKey@Dev
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Architecture & Tech Stack](#architecture--tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Configuration & Environment Variables](#configuration--environment-variables)
+- [Quick Start — Development](#quick-start--development)
+- [Quick Start — Production-like](#quick-start--production-like)
+- [Build & Run Locally (Without Docker)](#build--run-locally-without-docker)
+- [API Endpoints](#api-endpoints)
+- [Authentication / API Key](#authentication--api-key)
+- [Database & DB Tools](#database--db-tools)
+- [Common Issues & Troubleshooting](#common-issues--troubleshooting)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License & Contact](#license--contact)
 
-Set the key in environment variable `API_KEY`, or use `security.apikey.keys` in `application.yml` for comma-separated keys. Example `.env`:
+---
 
-    API_KEY=StrongKey@Dev
+## 🧩 Project Overview
 
-Whitelisted endpoints (accessible without key): `/api/v1/health`, `/swagger-ui/**`, `/v3/api-docs/**`.
+The **RAG Chat Service** is a backend component designed for storing and retrieving chat messages.
+It is built with **Spring Boot**, uses **MySQL** as the database, and is fully **Dockerized** for local and production deployments.
+
+This service can serve as the backend for a Retrieval-Augmented Generation (RAG)-based chatbot or any chat-driven microservice.
+
+---
+
+## ✨ Features
+
+- REST APIs for chat operations (CRUD)
+- Health check endpoint (`/api/v1/health`)
+- API-key-based authentication
+- Global exception handling
+- Dockerized setup for local and production environments
+- Swagger/OpenAPI documentation
+- Configurable via `.env` files
+- Resilience4j rate-limiting (for selected endpoints)
+- Easy database access via Adminer (optional in Docker setup)
+
+---
+
+## 🏗️ Architecture & Tech Stack
+
+| Layer | Technology |
+|-------|-------------|
+| Backend Framework | Spring Boot |
+| Language | Java 17+ |
+| Build Tool | Maven |
+| Database | MySQL 8 |
+| Containerization | Docker & Docker Compose |
+| API Docs | OpenAPI / Swagger |
+| Security | API Key-based |
+| Logging | SLF4J + Lombok |
+| Rate Limiting | Resilience4j |
+| Global Exception Handling | Spring Boot |
+
+---
+
+## 📂 Project Structure
+
+```
+rag-chat-service/
+├── src/
+│   ├── main/java/com/firefist/rag_chat_service/
+│   │   ├── controller/        # REST controllers
+│   │   ├── service/           # Business logic
+│   │   ├── repository/        # Spring Data JPA repositories
+│   │   ├── model/             # Entity models
+│   │   └── exception/         # Custom/global exception handling
+│   └── resources/
+│       ├── application.yml
+│       ├── static/
+│       └── templates/
+├── Dockerfile
+├── docker-compose.yml
+├── .env
+├── .env.prod
+└── README.md
+```
+
+---
+
+## ⚙️ Prerequisites
+
+- **Java 17+**
+- **Maven 3.6+**
+- **Docker & Docker Compose**
+- **Git**
+
+---
+
+## 🔐 Configuration & Environment Variables
+
+Use environment files for separating development and production setups.
+Create `.env` and `.env.prod` as per your environment.
+
+### Example `.env` file
+
+```env
+# Application
+SPRING_PROFILES_ACTIVE=dev
+SERVER_PORT=8080
+
+# API Key
+API_KEY=StrongKey@Dev
+
+# MySQL
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_DATABASE=rag_chat
+MYSQL_USER=raguser
+MYSQL_PASSWORD=ragpass
+MYSQL_PORT=3306
+
+# Adminer (optional)
+ADMINER_PORT=8081
+```
+
+### Example `.env.prod` file
+
+```env
+SPRING_PROFILES_ACTIVE=prod
+SERVER_PORT=8087
+
+API_KEY=ProdKey@Secure
+
+MYSQL_ROOT_PASSWORD=ProdRoot@123
+MYSQL_DATABASE=rag_chat_prod
+MYSQL_USER=raguser
+MYSQL_PASSWORD=ragpass
+MYSQL_PORT=3306
+```
+
+> 📝 Note: The internal MySQL port (`3306`) usually remains the same inside the container.
+> If running both environments locally, map host ports differently (e.g., `3306` → `3307` for prod).
+
+---
+
+## 🚀 Quick Start — Development
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/firefist28/rag-chat-service.git
+   cd rag-chat-service
+   ```
+
+2. Copy and configure the environment file
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Start containers
+   ```bash
+   docker compose up -d --build
+   ```
+
+4. Access the services:
+
+| Service | URL |
+|----------|-----|
+| Backend API | http://localhost:8080 |
+| Health Check | http://localhost:8080/api/v1/health |
+| Swagger UI | http://localhost:8080/swagger-ui/index.html |
+| Adminer | http://localhost:8081 |
+
+---
+
+## 🧱 Quick Start — Production-like
+
+1. Update and verify `.env.prod`
+2. Run the stack:
+   ```bash
+   docker compose --env-file .env.prod up -d --build
+   ```
+3. Access the backend:
+   - If mapped to port `8087`: `http://localhost:8087`
+4. Check logs:
+   ```bash
+   docker compose logs backend --tail=100
+   ```
+
+> 🧩 The backend may still show `Tomcat started on port 8080` internally — that’s the container’s internal port.
+> Host port mapping (`8087:8080`) controls external access.
+
+---
+
+## 🧰 Build & Run Locally (Without Docker)
+
+1. Build using Maven:
+   ```bash
+   ./mvnw clean package -DskipTests
+   ```
+2. Run the JAR:
+   ```bash
+   java -jar target/*.jar
+   ```
+3. Access `http://localhost:8080`
+
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|---------|-----------|--------------|----------------|
+| GET | `/api/v1/health` | Check service health | ❌ |
+| GET | `/api/v1/messages` | Fetch all chat messages | ✅ |
+| GET | `/api/v1/messages/{id}` | Fetch a specific message | ✅ |
+| POST | `/api/v1/messages` | Create a new message | ✅ |
+| PUT | `/api/v1/messages/{id}` | Update a message | ✅ |
+| DELETE | `/api/v1/messages/{id}` | Delete a message | ✅ |
+| GET | `/swagger-ui/**` | Swagger docs | ❌ |
+
+---
+
+## 🔑 Authentication / API Key
+
+All endpoints (except `/api/v1/health` and Swagger paths) require an API key.
+
+Include it in request headers:
+
+```
+X-API-KEY: <your-key>
+```
+
+- Configure your keys in `application.yml` or `.env`:
+  ```yaml
+  security:
+    apikey:
+      enabled: true
+      keys: "StrongKey@Dev"
+      whitelist: "/api/v1/health,/swagger-ui,/v3/api-docs"
+  ```
+
+---
+
+## 🗄️ Database & DB Tools
+
+- **DB:** MySQL 8
+- **Name:** `rag_chat` (default)
+- **Host (inside Docker):** `mysql`
+- **Port:** `3306` (internal)
+- **Adminer URL:** http://localhost:8081
+
+### Example connection details
+
+| Key | Value |
+|------|--------|
+| Host | mysql |
+| Port | 3306 |
+| Username | raguser |
+| Password | ragpass |
+| Database | rag_chat |
+
+---
+
+## 🧩 Common Issues & Troubleshooting
+
+| Issue | Possible Cause / Solution |
+|--------|----------------------------|
+| **Backend always shows port 8080 even in prod** | The container runs internally on port 8080. To access via 8087, map `8087:8080` in `docker-compose.yml` |
+| **MySQL port conflicts** | Host port mapping conflict. Change to `3307:3306` for another instance |
+| **DB migration error – foreign key constraint** | Drop dependent FK constraints or adjust schema changes carefully |
+| **Empty logs from `docker-compose logs`** | Containers might not be running. Check `docker compose ps` or run `docker compose up` without `-d` |
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/my-feature
+   ```
+3. Commit and push changes
+4. Open a Pull Request with details
+
+> Please avoid committing credentials or `.env` files.
+
+---
+
+## 📜 License & Contact
+
+- **License:** MIT (add `LICENSE` file if missing)
+- **Author:** [firefist28](https://github.com/firefist28)
+
+For questions or collaboration, open an issue or connect via GitHub.
+
+---
+
+## 🧠 Notes
+
+- Internal port for MySQL should remain **3306**, only host-side mappings differ for environments.
+- The backend automatically applies schema creation using JPA if `spring.jpa.hibernate.ddl-auto` is configured.
+- Swagger UI is accessible once the backend is up.
+- The project can later integrate with an LLM-based RAG service as its chat data source.
+
+---
+
+⭐ **If you found this project helpful, consider giving it a star on GitHub!**
