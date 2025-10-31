@@ -1,6 +1,6 @@
-# RAG Chat Service — Backend (Spring Boot)
+# 🚀 RAG Chat Service — Backend (Spring Boot)
 
-> Backend service for the **RAG Chat Service**, a containerized Spring Boot application that provides APIs for storing and managing chat messages.
+> Backend service for the **RAG Chat Service**, a containerized Spring Boot application that provides APIs for storing and managing chat messages.  
 > This README covers project overview, setup, configuration, APIs, Docker usage, and troubleshooting.
 
 ---
@@ -20,7 +20,6 @@
 - [Authentication / API Key](#authentication--api-key)
 - [Database & DB Tools](#database--db-tools)
 - [Common Issues & Troubleshooting](#common-issues--troubleshooting)
-- [Testing](#testing)
 - [Contributing](#contributing)
 - [License & Contact](#license--contact)
 
@@ -28,7 +27,7 @@
 
 ## 🧩 Project Overview
 
-The **RAG Chat Service** is a backend component designed for storing and retrieving chat messages.
+The **RAG Chat Service** is a backend component designed for storing and retrieving chat messages.  
 It is built with **Spring Boot**, uses **MySQL** as the database, and is fully **Dockerized** for local and production deployments.
 
 This service can serve as the backend for a Retrieval-Augmented Generation (RAG)-based chatbot or any chat-driven microservice.
@@ -68,7 +67,7 @@ This service can serve as the backend for a Retrieval-Augmented Generation (RAG)
 
 ## 📂 Project Structure
 
-```
+```text
 rag-chat-service/
 ├── src/
 │   ├── main/java/com/firefist/rag_chat_service/
@@ -101,7 +100,7 @@ rag-chat-service/
 
 ## 🔐 Configuration & Environment Variables
 
-Use environment files for separating development and production setups.
+Use environment files for separating development and production setups.  
 Create `.env` and `.env.prod` as per your environment.
 
 ### Example `.env` file
@@ -140,70 +139,71 @@ MYSQL_PASSWORD=ragpass
 MYSQL_PORT=3306
 ```
 
-> 📝 Note: The internal MySQL port (`3306`) usually remains the same inside the container.
+> **Note:** The internal MySQL port (`3306`) remains the same inside the container.  
 > If running both environments locally, map host ports differently (e.g., `3306` → `3307` for prod).
 
 ---
 
-## 🚀 Quick Start — Development
+## 🧑‍💻 Quick Start — Development
 
-1. Clone the repository
+1. **Clone the repository**
    ```bash
    git clone https://github.com/firefist28/rag-chat-service.git
    cd rag-chat-service
    ```
 
-2. Copy and configure the environment file
+2. **Copy and configure the environment file**
    ```bash
    cp .env.example .env
    ```
 
-3. Start containers
+3. **Start containers**
    ```bash
    docker compose up -d --build
    ```
 
-4. Access the services:
+4. **Access services**
 
 | Service | URL |
 |----------|-----|
-| Backend API | http://localhost:8080 |
-| Health Check | http://localhost:8080/api/v1/health |
-| Swagger UI | http://localhost:8080/swagger-ui/index.html |
-| Adminer | http://localhost:8081 |
+| Backend API | [http://localhost:8080](http://localhost:8080) |
+| Health Check | [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health) |
+| Swagger UI | [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) |
+| Adminer | [http://localhost:8081](http://localhost:8081) |
 
 ---
 
 ## 🧱 Quick Start — Production-like
 
-1. Update and verify `.env.prod`
-2. Run the stack:
+1. **Update and verify** `.env.prod`
+2. **Run the stack**
    ```bash
    docker compose --env-file .env.prod up -d --build
    ```
-3. Access the backend:
-   - If mapped to port `8087`: `http://localhost:8087`
-4. Check logs:
+3. **Access backend**
+   - Example: [http://localhost:8087](http://localhost:8087)
+4. **Check logs**
    ```bash
    docker compose logs backend --tail=100
    ```
 
-> 🧩 The backend may still show `Tomcat started on port 8080` internally — that’s the container’s internal port.
-> Host port mapping (`8087:8080`) controls external access.
+> **Note:** The backend may log `Tomcat started on port 8080` (container internal port).  
+> Host port mapping (`8087:8080`) defines how it's accessed externally.
 
 ---
 
 ## 🧰 Build & Run Locally (Without Docker)
 
-1. Build using Maven:
+1. **Build with Maven**
    ```bash
    ./mvnw clean package -DskipTests
    ```
-2. Run the JAR:
+2. **Run the JAR**
    ```bash
    java -jar target/*.jar
    ```
-3. Access `http://localhost:8080`
+3. **Access locally**
+   - [http://localhost:8080](http://localhost:8080)
 
 ---
 
@@ -217,7 +217,7 @@ MYSQL_PORT=3306
 | POST | `/api/v1/messages` | Create a new message | ✅ |
 | PUT | `/api/v1/messages/{id}` | Update a message | ✅ |
 | DELETE | `/api/v1/messages/{id}` | Delete a message | ✅ |
-| GET | `/swagger-ui/**` | Swagger docs | ❌ |
+| GET | `/swagger-ui/**` | Swagger documentation | ❌ |
 
 ---
 
@@ -225,32 +225,31 @@ MYSQL_PORT=3306
 
 All endpoints (except `/api/v1/health` and Swagger paths) require an API key.
 
-Include it in request headers:
+Include it in headers:
 
-```
+```http
 X-API-KEY: <your-key>
 ```
 
-- Configure your keys in `application.yml` or `.env`:
-  ```yaml
-  security:
-    apikey:
-      enabled: true
-      keys: "StrongKey@Dev"
-      whitelist: "/api/v1/health,/swagger-ui,/v3/api-docs"
-  ```
+Example configuration in `application.yml`:
+
+```yaml
+security:
+  apikey:
+    enabled: true
+    keys: "StrongKey@Dev"
+    whitelist: "/api/v1/health,/swagger-ui,/v3/api-docs"
+```
 
 ---
 
 ## 🗄️ Database & DB Tools
 
-- **DB:** MySQL 8
-- **Name:** `rag_chat` (default)
-- **Host (inside Docker):** `mysql`
-- **Port:** `3306` (internal)
-- **Adminer URL:** http://localhost:8081
-
-### Example connection details
+- **DB:** MySQL 8  
+- **Database name:** `rag_chat`  
+- **Host (Docker internal):** `mysql`  
+- **Port:** `3306`  
+- **Adminer:** [http://localhost:8081](http://localhost:8081)
 
 | Key | Value |
 |------|--------|
@@ -264,45 +263,45 @@ X-API-KEY: <your-key>
 
 ## 🧩 Common Issues & Troubleshooting
 
-| Issue | Possible Cause / Solution |
-|--------|----------------------------|
-| **Backend always shows port 8080 even in prod** | The container runs internally on port 8080. To access via 8087, map `8087:8080` in `docker-compose.yml` |
-| **MySQL port conflicts** | Host port mapping conflict. Change to `3307:3306` for another instance |
-| **DB migration error – foreign key constraint** | Drop dependent FK constraints or adjust schema changes carefully |
-| **Empty logs from `docker-compose logs`** | Containers might not be running. Check `docker compose ps` or run `docker compose up` without `-d` |
+| Issue | Solution |
+|--------|-----------|
+| Backend shows port 8080 even in prod | Container runs on internal port 8080; map `8087:8080` in Docker Compose |
+| MySQL port conflicts | Use `3307:3306` for a second instance |
+| DB migration FK error | Drop dependent foreign keys before altering columns |
+| Empty logs | Run `docker compose up` without `-d` to view real-time logs |
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a new branch:
+1. Fork this repository  
+2. Create a feature branch  
    ```bash
    git checkout -b feature/my-feature
    ```
-3. Commit and push changes
-4. Open a Pull Request with details
+3. Commit and push your changes  
+4. Open a Pull Request 🎉
 
-> Please avoid committing credentials or `.env` files.
+> Avoid committing sensitive data such as `.env` files.
 
 ---
 
 ## 📜 License & Contact
 
-- **License:** MIT (add `LICENSE` file if missing)
+- **License:** MIT  
 - **Author:** [firefist28](https://github.com/firefist28)
 
-For questions or collaboration, open an issue or connect via GitHub.
+For any questions or collaborations, please open an issue or reach out on GitHub.
 
 ---
 
 ## 🧠 Notes
 
-- Internal port for MySQL should remain **3306**, only host-side mappings differ for environments.
-- The backend automatically applies schema creation using JPA if `spring.jpa.hibernate.ddl-auto` is configured.
-- Swagger UI is accessible once the backend is up.
-- The project can later integrate with an LLM-based RAG service as its chat data source.
+- Internal MySQL port remains `3306`; host mappings may differ.  
+- JPA auto-creates schema if `spring.jpa.hibernate.ddl-auto` is configured.  
+- Swagger UI becomes available after service starts.  
+- Future integration planned for LLM-based RAG chatbot interface.
 
 ---
 
-⭐ **If you found this project helpful, consider giving it a star on GitHub!**
+⭐ **If you found this project helpful, please consider giving it a star!**
