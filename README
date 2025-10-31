@@ -1,0 +1,20 @@
+# RAG Chat Storage - Backend (Spring Boot)
+
+## Quick start (dev)
+1. Copy `.env.example` to `.env` and update values.
+2. Build & run with Docker Compose:
+3. Backend will be available at http://localhost:8080
+- Health: http://localhost:8080/api/v1/health
+- Adminer (DB browser): http://localhost:8081
+
+## API Key authentication
+
+All non-whitelisted endpoints require a header:
+
+    X-API-KEY: StrongKey@Dev
+
+Set the key in environment variable `API_KEY`, or use `security.apikey.keys` in `application.yml` for comma-separated keys. Example `.env`:
+
+    API_KEY=StrongKey@Dev
+
+Whitelisted endpoints (accessible without key): `/api/v1/health`, `/swagger-ui/**`, `/v3/api-docs/**`.

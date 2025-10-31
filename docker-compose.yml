@@ -1,0 +1,56 @@
+#version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      # Root password used to initialize the root user (required)
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      # Database to create on first initialization
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rag_chat}
+      # Non-root application user created on first initialization
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # Keeps compatibility with some older clients; remove this line to use the default caching_sha2_password.
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+    environment:
+      - ADMINER_DEFAULT_SERVER=mysql
+    restart: unless-stopped
+
+  backend:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-rag_chat}
+      - MYSQL_USER=${MYSQL_USER:-user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+      - API_KEY=${API_KEY:-change_me}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
