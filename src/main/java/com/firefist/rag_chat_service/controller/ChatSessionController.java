@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -40,6 +41,15 @@ public class ChatSessionController {
         // Location header pointing to GET /api/v1/sessions/{id} (not implemented yet)
         URI location = URI.create("/api/v1/sessions/" + created.getId().toString());
         return ResponseEntity.created(location).body(resp);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ChatSession>> getSessionsByUserId(@PathVariable String userId) {
+        List<ChatSession> sessions = service.getSessionsByUserId(userId);
+        if (!sessions.isEmpty())
+            return ResponseEntity.ok(sessions);
+        else
+            return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
