@@ -2,6 +2,7 @@ package com.firefist.rag_chat_service.service.llm;
 
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.StringJoiner;
  * Simple LLM stub that composes a reply using retrieved snippets and returns it.
  */
 @Service
+@ConditionalOnProperty(name = "llm.enabled", havingValue = "false", matchIfMissing = true)
 public class MockLlmClientService implements LlmClient {
 
     @Override
