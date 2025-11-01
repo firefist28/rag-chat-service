@@ -68,15 +68,4 @@ public class ChatMessageController {
             );
             return ResponseEntity.status(201).body(resp);
     }
-
-    @GetMapping("/testRL")
-    @RateLimiter(name = "rl", fallbackMethod = "rlFallback")
-    public ResponseEntity<?> testRateLimit(){
-        return ResponseEntity.ok().body("Rate Limit Working");
-    }
-
-    // Option B: accept the specific Resilience4j exception
-     public ResponseEntity<?> rlFallback(RequestNotPermitted ex) {
-         return ResponseEntity.status(429).body("Rate Limit Reached..Please Wait..");
-     }
 }

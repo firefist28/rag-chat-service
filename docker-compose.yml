@@ -39,6 +39,10 @@ services:
     # environment values come from the env file; ensure you pass the correct env file when starting (see .env.dev/.env.prod)
     env_file:
       - .env.dev
+    environment:
+      - llm.enabled=${LLM_ENABLED}
+      - llm.api.key=${LLM_API_KEY}
+      - llm.endpoint=${LLM_ENDPOINT}
     # map host SERVER_PORT to container SERVER_PORT (container must run the app on the same port)
     ports:
       - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
