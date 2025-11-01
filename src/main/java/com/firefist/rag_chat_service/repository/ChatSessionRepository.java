@@ -4,7 +4,9 @@ import com.firefist.rag_chat_service.model.ChatSession;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
+import java.util.List;
 
 public interface ChatSessionRepository extends JpaRepository<ChatSession, UUID> {
     // extra query methods will go here (findByUserId, findByFavorite, etc.)
+    List<ChatSession> findByUserId(String userId);
 }

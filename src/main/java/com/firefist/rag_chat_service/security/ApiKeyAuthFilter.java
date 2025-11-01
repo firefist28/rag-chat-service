@@ -48,6 +48,12 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            // Skip API key validation for preflight
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String key = request.getHeader(HEADER_NAME);
 
         if (!isValidKey(key)) {

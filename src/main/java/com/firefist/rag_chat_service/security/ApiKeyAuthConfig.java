@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 
 import java.util.*;
 
@@ -45,7 +46,7 @@ public class ApiKeyAuthConfig {
         ApiKeyAuthFilter filter = new ApiKeyAuthFilter(keys, whitelist);
         registration.setFilter(filter);
         registration.addUrlPatterns("/*");
-        registration.setOrder(10); // run fairly early
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
         return registration;
     }
 

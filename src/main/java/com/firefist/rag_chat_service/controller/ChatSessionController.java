@@ -11,11 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/sessions")
+@CrossOrigin(origins = "http://localhost:3001")
 public class ChatSessionController {
 
     private final ChatSessionService service;
@@ -52,6 +54,12 @@ public class ChatSessionController {
                 s.getId(), s.getTitle(), s.getUserId(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt()
         );
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ChatSession>> getSessionsByUserId(@PathVariable String userId) {
+        List<ChatSession> sessions = service.getSessionsByUserId(userId);
+        return ResponseEntity.ok(sessions);
     }
 
     @PutMapping("/{id}/rename")
