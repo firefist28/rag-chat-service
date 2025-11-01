@@ -39,6 +39,7 @@ This service can serve as the backend for a Retrieval-Augmented Generation (RAG)
 - REST APIs for chat operations (CRUD)
 - Health check endpoint (`/api/v1/health`)
 - API-key-based authentication
+- Multiple API Keys Support
 - Global exception handling
 - Dockerized setup for local and production environments
 - Swagger/OpenAPI documentation
@@ -71,7 +72,10 @@ This service can serve as the backend for a Retrieval-Augmented Generation (RAG)
 rag-chat-service/
 ├── src/
 │   ├── main/java/com/firefist/rag_chat_service/
+│   │   ├── config/            # LLM and Swagger Config
 │   │   ├── controller/        # REST controllers
+│   │   ├── dto/               # DTO to handle request and response
+│   │   ├── security/          # API keys Security
 │   │   ├── service/           # Business logic
 │   │   ├── repository/        # Spring Data JPA repositories
 │   │   ├── model/             # Entity models
@@ -82,7 +86,7 @@ rag-chat-service/
 │       └── templates/
 ├── Dockerfile
 ├── docker-compose.yml
-├── .env
+├── .env.dev
 ├── .env.prod
 └── README.md
 ```
@@ -101,42 +105,85 @@ rag-chat-service/
 ## 🔐 Configuration & Environment Variables
 
 Use environment files for separating development and production setups.  
-Create `.env` and `.env.prod` as per your environment.
+Create `.env.dev` and `.env.prod` as per your environment.
 
-### Example `.env` file
+### Example `.env.dev` file
 
-```env
-# Application
-SPRING_PROFILES_ACTIVE=dev
+```env.dev
+# App
 SERVER_PORT=8080
+SPRING_PROFILES_ACTIVE=dev
 
-# API Key
-API_KEY=StrongKey@Dev
+# Single legacy key (optional)
+API_KEY=
+# Prefer multiple keys (comma-separated, no spaces)
+API_KEYS=Strong@Dev1,Strong@Dev2
 
-# MySQL
-MYSQL_ROOT_PASSWORD=rootpassword
-MYSQL_DATABASE=rag_chat
-MYSQL_USER=raguser
-MYSQL_PASSWORD=ragpass
+# MySQL (container-facing port should remain 3306)
+MYSQL_HOST=mysql
 MYSQL_PORT=3306
+MYSQL_PORT_HOST=3306
+MYSQL_DATABASE=rag_chat_dev
 
-# Adminer (optional)
-ADMINER_PORT=8081
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_USER=user
+MYSQL_PASSWORD=password
+
+# optional: unique volume name if you must use fixed names
+MYSQL_VOLUME_NAME=mysql-data-dev
+
+# Other (optional)
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Adminer host port mapping
+ADMINER_PORT_HOST=8081
+
+#LLM
+LLM_API_KEY=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
+LLM_ENDPOINT=https://api.openai.com/v1/chat/completions
+LLM_MODEL=gpt-4o-mini
+LLM_ENABLED=false
 ```
 
 ### Example `.env.prod` file
 
 ```env
-SPRING_PROFILES_ACTIVE=prod
+# App
 SERVER_PORT=8087
+SPRING_PROFILES_ACTIVE=prod
+# API Key - required for all non-whitelisted endpoints
+API_KEY=StrongKey@Prod
 
-API_KEY=ProdKey@Secure
+# API Keys (comma-separated). Adding as many keys as we want.
+# Example:
+API_KEYS=ProdKey@Secure,ProdKey@Backup
 
-MYSQL_ROOT_PASSWORD=ProdRoot@123
-MYSQL_DATABASE=rag_chat_prod
-MYSQL_USER=raguser
-MYSQL_PASSWORD=ragpass
+# MySQL (container-facing port should remain 3306)
+MYSQL_HOST=mysql
 MYSQL_PORT=3306
+MYSQL_PORT_HOST=3308
+MYSQL_DATABASE=rag_chat_prod
+
+# optional: unique volume name if you must use fixed names
+MYSQL_VOLUME_NAME=mysql-data-prod
+
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_USER=user
+MYSQL_PASSWORD=password
+
+# Other (optional)
+REDIS_HOST=redis
+REDIS_PORT=6391
+
+# Adminer host port mapping
+ADMINER_PORT_HOST=8082
+
+#LLM
+LLM_API_KEY=
+LLM_ENDPOINT=https://api.openai.com/v1/chat/completions
+LLM_MODEL=gpt-4o-mini
+LLM_ENABLED=false
 ```
 
 > **Note:** The internal MySQL port (`3306`) remains the same inside the container.  
@@ -152,17 +199,12 @@ MYSQL_PORT=3306
    cd rag-chat-service
    ```
 
-2. **Copy and configure the environment file**
+2. **Start containers**
    ```bash
-   cp .env.example .env
+   docker compose -p rag-chat-dev --env-file .env.dev up -d
    ```
 
-3. **Start containers**
-   ```bash
-   docker compose up -d --build
-   ```
-
-4. **Access services**
+3. **Access services**
 
 | Service | URL |
 |----------|-----|
@@ -178,7 +220,7 @@ MYSQL_PORT=3306
 1. **Update and verify** `.env.prod`
 2. **Run the stack**
    ```bash
-   docker compose --env-file .env.prod up -d --build
+   docker compose -p rag-chat-prod --env-file .env.prod up -d
    ```
 3. **Access backend**
    - Example: [http://localhost:8087](http://localhost:8087)
@@ -186,9 +228,6 @@ MYSQL_PORT=3306
    ```bash
    docker compose logs backend --tail=100
    ```
-
-> **Note:** The backend may log `Tomcat started on port 8080` (container internal port).  
-> Host port mapping (`8087:8080`) defines how it's accessed externally.
 
 ---
 
@@ -209,15 +248,18 @@ MYSQL_PORT=3306
 
 ## 📡 API Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|---------|-----------|--------------|----------------|
-| GET | `/api/v1/health` | Check service health | ❌ |
-| GET | `/api/v1/messages` | Fetch all chat messages | ✅ |
-| GET | `/api/v1/messages/{id}` | Fetch a specific message | ✅ |
-| POST | `/api/v1/messages` | Create a new message | ✅ |
-| PUT | `/api/v1/messages/{id}` | Update a message | ✅ |
-| DELETE | `/api/v1/messages/{id}` | Delete a message | ✅ |
-| GET | `/swagger-ui/**` | Swagger documentation | ❌ |
+| Method | Endpoint                                | Description              | Auth Required |
+|--------|-----------------------------------------|--------------------------|---------------|
+| GET    | `/api/v1/health`                        | Check service health     | ❌             |
+| POST   | `/api/v1/sessions`                      | Create a session         | ✅             |
+| GET    | `/api/v1/sessions/{id}`                 | Get session              | ✅             |
+| GET    | `/api/v1/sessions/user/{userId}`        | Get session By User Id   | ✅             |
+| DELETE | `/api/v1/sessions/{id}`                 | Soft Delete Session      | ✅             |
+| POST   | `/api/v1/sessions/{id}/favorite`        | Set a session favorite   | ✅             |
+| POST   | `/api/v1/sessions/{id}/rename`          | Rename session           | ✅             |
+| GET    | `/api/v1/sessions/{sessionId}/messages` | Get message from session | ✅             |
+| POST   | `/api/v1/sessions/{sessionId}/messages` | Create a new message     | ✅             |
+| GET    | `/swagger-ui/**`                        | Swagger documentation    | ❌             |
 
 ---
 
@@ -283,6 +325,21 @@ security:
 4. Open a Pull Request 🎉
 
 > Avoid committing sensitive data such as `.env` files.
+
+---
+
+### 🧠 LLM Integration (Experimental)
+- Added mock **LLM integration layer** to simulate interaction with a language model.
+- Controlled via the environment variable:
+  ```env
+  LLM_ENABLED=true
+  LLM_API_KEY=your-paid-llm-api-key-if-you-have-one
+  ```
+- **Behavior:**
+    - If `LLM_ENABLED=false` → LLM service is disabled.
+    - If `LLM_ENABLED=true` but no valid `LLM_API_KEY` → mock responses are generated.
+- Since no paid LLM service is connected, the current behavior only serves **mock responses**.
+- This feature can be enhanced later by plugging in a real LLM provider.
 
 ---
 

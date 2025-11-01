@@ -3,12 +3,11 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: rag_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-rag_chat}
-      MYSQL_USER: ${MYSQL_USER:-user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     # host_port:container_port -> container runs MySQL on 3306 always; host port is configurable via MYSQL_PORT_HOST
     ports:
       - "${MYSQL_PORT_HOST:-3306}:3306"
@@ -24,7 +23,6 @@ services:
 
   adminer:
     image: adminer
-    container_name: rag_adminer
     ports:
       - "${ADMINER_PORT_HOST:-8081}:8080"
     depends_on:
@@ -35,14 +33,19 @@ services:
 
   backend:
     build: .
-    container_name: rag_backend
-    # environment values come from the env file; ensure you pass the correct env file when starting (see .env.dev/.env.prod)
-    env_file:
-      - .env.dev
     environment:
+      - SERVER_PORT=${SERVER_PORT}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - llm.enabled=${LLM_ENABLED}
       - llm.api.key=${LLM_API_KEY}
       - llm.endpoint=${LLM_ENDPOINT}
+      - API_KEY=${API_KEY}
+      - API_KEYS=${API_KEYS}
     # map host SERVER_PORT to container SERVER_PORT (container must run the app on the same port)
     ports:
       - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
