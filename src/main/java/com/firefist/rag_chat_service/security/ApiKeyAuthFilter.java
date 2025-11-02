@@ -31,6 +31,11 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // CRITICAL: Skip OPTIONS requests (CORS preflight)
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            log.debug("Skipping filter for OPTIONS request");
+            return true;
+        }
         String path = request.getRequestURI();
         if (whitelist != null) {
             for (String pattern : whitelist) {

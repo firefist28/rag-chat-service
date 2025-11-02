@@ -38,20 +38,26 @@ public class ApiKeyAuthConfig {
     private String whitelistPatterns;
 
     @Bean
-    public FilterRegistrationBean<ApiKeyAuthFilter> apiKeyAuthFilter() {
+    public ApiKeyAuthFilter apiKeyAuthFilter() {
+        List<String> keys = resolveKeys();
+        List<String> whitelist = resolveWhitelist();
+        return new ApiKeyAuthFilter(keys, whitelist);
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiKeyAuthFilter> apiKeyAuthFilterRegistration(ApiKeyAuthFilter filter) {
         FilterRegistrationBean<ApiKeyAuthFilter> registration = new FilterRegistrationBean<>();
+
         if (!enabled) {
             registration.setEnabled(false);
             return registration;
         }
 
-        List<String> keys = resolveKeys();
-        List<String> whitelist = resolveWhitelist();
-
-        ApiKeyAuthFilter filter = new ApiKeyAuthFilter(keys, whitelist);
         registration.setFilter(filter);
         registration.addUrlPatterns("/*");
-        registration.setOrder(10); // run fairly early
+        registration.setOrder(1); // CRITICAL: Run before Spring Security (which is typically order 100)
+        registration.setName("apiKeyAuthFilter");
+
         return registration;
     }
 
@@ -65,7 +71,6 @@ public class ApiKeyAuthConfig {
             for (String p : parts) {
                 if (p != null && !p.isBlank()) keys.add(p.trim());
             }
-            // if API_KEYS was set, return these keys (but still allow fallback to configuredKeys to be appended)
         }
 
         // 2) single API_KEY env var (backwards compat)
