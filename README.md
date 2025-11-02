@@ -141,50 +141,57 @@ REDIS_PORT=6379
 ADMINER_PORT_HOST=8081
 
 #LLM
-LLM_API_KEY=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
+LLM_API_KEY=<key here>
 LLM_ENDPOINT=https://api.openai.com/v1/chat/completions
 LLM_MODEL=gpt-4o-mini
 LLM_ENABLED=false
+
+##CORS
+ALLOWED_ORIGINS=http://localhost:3000
+
 ```
 
 ### Example `.env.prod` file
 
 ```env
 # App
-SERVER_PORT=8087
-SPRING_PROFILES_ACTIVE=prod
-# API Key - required for all non-whitelisted endpoints
-API_KEY=StrongKey@Prod
+SERVER_PORT=8080
+SPRING_PROFILES_ACTIVE=dev
 
-# API Keys (comma-separated). Adding as many keys as we want.
-# Example:
-API_KEYS=ProdKey@Secure,ProdKey@Backup
+# Single legacy key (optional)
+API_KEY=
+# Prefer multiple keys (comma-separated, no spaces)
+API_KEYS=Strong@Dev1,Strong@Dev2
 
 # MySQL (container-facing port should remain 3306)
 MYSQL_HOST=mysql
 MYSQL_PORT=3306
-MYSQL_PORT_HOST=3308
-MYSQL_DATABASE=rag_chat_prod
-
-# optional: unique volume name if you must use fixed names
-MYSQL_VOLUME_NAME=mysql-data-prod
+MYSQL_PORT_HOST=3306
+MYSQL_DATABASE=rag_chat_dev
 
 MYSQL_ROOT_PASSWORD=rootpassword
 MYSQL_USER=user
 MYSQL_PASSWORD=password
 
+# optional: unique volume name if you must use fixed names
+MYSQL_VOLUME_NAME=mysql-data-dev
+
 # Other (optional)
 REDIS_HOST=redis
-REDIS_PORT=6391
+REDIS_PORT=6379
 
 # Adminer host port mapping
-ADMINER_PORT_HOST=8082
+ADMINER_PORT_HOST=8081
 
 #LLM
-LLM_API_KEY=
+LLM_API_KEY=<key here>
 LLM_ENDPOINT=https://api.openai.com/v1/chat/completions
 LLM_MODEL=gpt-4o-mini
 LLM_ENABLED=false
+
+##CORS
+ALLOWED_ORIGINS=http://localhost:3000
+
 ```
 
 > **Note:** The internal MySQL port (`3306`) remains the same inside the container.  
@@ -202,7 +209,7 @@ LLM_ENABLED=false
 
 2. **Start containers**
    ```bash
-   docker compose -p rag-chat-dev --env-file .env.dev up -d
+   docker compose -p rag-chat-dev --env-file .env.dev up -d --build
    ```
 
 3. **Access services**
@@ -221,7 +228,7 @@ LLM_ENABLED=false
 1. **Update and verify** `.env.prod`
 2. **Run the stack**
    ```bash
-   docker compose -p rag-chat-prod --env-file .env.prod up -d
+   docker compose -p rag-chat-prod --env-file .env.prod up -d --build
    ```
 3. **Access backend**
    - Example: [http://localhost:8087](http://localhost:8087)
@@ -257,9 +264,11 @@ LLM_ENABLED=false
 | GET    | `/api/v1/sessions/user/{userId}`        | Get session By User Id   | ✅             |
 | DELETE | `/api/v1/sessions/{id}`                 | Soft Delete Session      | ✅             |
 | POST   | `/api/v1/sessions/{id}/favorite`        | Set a session favorite   | ✅             |
-| POST   | `/api/v1/sessions/{id}/rename`          | Rename session           | ✅             |
+| PUT    | `/api/v1/sessions/{id}/rename`          | Rename session           | ✅             |
 | GET    | `/api/v1/sessions/{sessionId}/messages` | Get message from session | ✅             |
 | POST   | `/api/v1/sessions/{sessionId}/messages` | Create a new message     | ✅             |
+| GET    | `/api/v1/user/{userId}`                 | Gets User                | ✅             |
+| POST   | `/api/v1/user/`                         | Creates a User           | ✅             |
 | GET    | `/swagger-ui/**`                        | Swagger documentation    | ❌             |
 
 ---

@@ -12,7 +12,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * Minimal configuration to disable CSRF and ensure API key authentication works.
  * Your ApiKeyAuthConfig is already registering ApiKeyAuthFilter separately.
  */
-// WebSecurityConfig.java (Re-share from previous step)
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
@@ -26,7 +25,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF (fixes 403 on POST/PUT/DELETE)
+                // 1. Disable CSRF
                 .csrf(csrf -> csrf.disable())
 
                 // 2. Set session management to stateless

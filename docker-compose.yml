@@ -46,6 +46,7 @@ services:
       - llm.endpoint=${LLM_ENDPOINT}
       - API_KEY=${API_KEY}
       - API_KEYS=${API_KEYS}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     # map host SERVER_PORT to container SERVER_PORT (container must run the app on the same port)
     ports:
       - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
