@@ -46,6 +46,7 @@ This service can serve as the backend for a Retrieval-Augmented Generation (RAG)
 - Configurable via `.env` files
 - Resilience4j rate-limiting (for selected endpoints)
 - Easy database access via Adminer (optional in Docker setup)
+- Implemented CORS and web security for frontend communication
 
 ---
 
