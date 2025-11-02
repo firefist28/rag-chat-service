@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -29,15 +27,17 @@ public class UserController {
         Optional<User> created = service.createUser(req);
 
         if (created.isPresent()) {
+            User user = created.get();
             UserResponse resp = new UserResponse(
-                    created.get().getId(),
-                    created.get().getUserId(),
-                    created.get().getCreatedAt()
+                    user.getId(),
+                    user.getUserId(),
+                    user.getCreatedAt()
             );
 
-            URI location = URI.create("/api/v1/user/" + created.get().getId().toString());
-            return ResponseEntity.created(location).body(resp);
-        }else {
+            log.info("User created successfully with id: {}", user.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(resp);
+        } else {
+            log.warn("User already exists with userId: {}", req.getUserId());
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new UserResponse(
@@ -49,11 +49,15 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Optional<User>> getUserByUserId(@PathVariable String userId) {
+    public ResponseEntity<User> getUserByUserId(@PathVariable String userId) {
         Optional<User> user = service.getUserById(userId);
-        if (user.isPresent())
-            return ResponseEntity.ok(user);
-        else
-            return ResponseEntity.noContent().build();
+
+        if (user.isPresent()) {
+            log.info("User found with userId: {}", userId);
+            return ResponseEntity.ok(user.get());
+        } else {
+            log.warn("User not found with userId: {}", userId);
+            return ResponseEntity.notFound().build();
+        }
     }
 }
