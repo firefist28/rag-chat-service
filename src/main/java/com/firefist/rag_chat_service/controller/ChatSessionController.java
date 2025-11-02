@@ -35,7 +35,8 @@ public class ChatSessionController {
                 created.getUserId(),
                 created.isFavorite(),
                 created.getCreatedAt(),
-                created.getUpdatedAt()
+                created.getUpdatedAt(),
+                created.getDeletedAt()
         );
 
         // Location header pointing to GET /api/v1/sessions/{id} (not implemented yet)
@@ -59,7 +60,7 @@ public class ChatSessionController {
         ChatSession s = service.getById(uuid);
         if (s == null) return ResponseEntity.notFound().build();
         SessionResponse resp = new SessionResponse(
-                s.getId(), s.getTitle(), s.getUserId(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt()
+                s.getId(), s.getTitle(), s.getUserId(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt(), s.getDeletedAt()
         );
         return ResponseEntity.ok(resp);
     }
@@ -72,7 +73,7 @@ public class ChatSessionController {
         if (updated == null) return ResponseEntity.notFound().build();
         SessionResponse resp = new SessionResponse(
                 updated.getId(), updated.getTitle(), updated.getUserId(), updated.isFavorite(),
-                updated.getCreatedAt(), updated.getUpdatedAt()
+                updated.getCreatedAt(), updated.getUpdatedAt(), updated.getDeletedAt()
         );
         return ResponseEntity.ok(resp);
     }
@@ -84,7 +85,7 @@ public class ChatSessionController {
         if (updated == null) return ResponseEntity.notFound().build();
         SessionResponse resp = new SessionResponse(
                 updated.getId(), updated.getTitle(), updated.getUserId(), updated.isFavorite(),
-                updated.getCreatedAt(), updated.getUpdatedAt()
+                updated.getCreatedAt(), updated.getUpdatedAt(), updated.getDeletedAt()
         );
         return ResponseEntity.ok(resp);
     }

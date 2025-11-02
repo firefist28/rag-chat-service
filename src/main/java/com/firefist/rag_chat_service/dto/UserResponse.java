@@ -10,12 +10,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class SessionResponse {
+public class UserResponse {
     private UUID id;
-    private String title;
     private String userId;
-    private boolean favorite;
     private Instant createdAt;
-    private Instant updatedAt;
-    private Instant deletedAt;
 }
