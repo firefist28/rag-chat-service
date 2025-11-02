@@ -33,12 +33,15 @@ public class UserService {
         u.setUserId(normalizedUserId);
         // favorite false by default
         log.info("Creating user with userId - {}", normalizedUserId);
-        return Optional.of(repository.save(u));
+        User savedUser = repository.save(u);
+        return Optional.of(savedUser);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> getUserById(String userId) {
-        if (userId == null) return Optional.empty();
+        if (userId == null || userId.trim().isEmpty()) {
+            return Optional.empty();
+        }
         return repository.findFirstByUserId(userId.trim());
     }
 }
