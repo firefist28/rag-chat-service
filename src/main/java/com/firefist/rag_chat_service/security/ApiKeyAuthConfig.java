@@ -44,23 +44,6 @@ public class ApiKeyAuthConfig {
         return new ApiKeyAuthFilter(keys, whitelist);
     }
 
-    @Bean
-    public FilterRegistrationBean<ApiKeyAuthFilter> apiKeyAuthFilterRegistration(ApiKeyAuthFilter filter) {
-        FilterRegistrationBean<ApiKeyAuthFilter> registration = new FilterRegistrationBean<>();
-
-        if (!enabled) {
-            registration.setEnabled(false);
-            return registration;
-        }
-
-        registration.setFilter(filter);
-        registration.addUrlPatterns("/*");
-        registration.setOrder(1); // CRITICAL: Run before Spring Security (which is typically order 100)
-        registration.setName("apiKeyAuthFilter");
-
-        return registration;
-    }
-
     private List<String> resolveKeys() {
         // Use LinkedHashSet to preserve order and dedupe
         Set<String> keys = new LinkedHashSet<>();
