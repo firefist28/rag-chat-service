@@ -25,9 +25,6 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF
-                .csrf(csrf -> csrf.disable())
-
                 // 2. Set session management to stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -38,7 +35,7 @@ public class WebSecurityConfig {
                 )
 
                 // 4. Register custom filter AFTER authorization is handled for OPTIONS
-                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class); // <--- NEW LINE
+                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
